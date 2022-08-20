@@ -1,0 +1,51 @@
+List<>와 Array를 눈곱만큼 쓰면서 느낀 차이점
+
+유니티에서 Json 파일 입출력을 위해 객체를 직렬화해야 하는 상황일 때.
+List를 직렬화 하는 방법은 나는 모른다.
+하지만 Array는 지원을 한다
+그래서 List가 있는 클래스의 객체를 직렬화하고자 할 때,
+그 List<>형식의 필드를 Array로 바꾼 클래스를 따로 만들어 직렬화한다.
+
+이 컬렉션에 데이터를 집어넣어야 하는 상황이다. 이 때,
+List의 강점은 "아 이녀석은 N개밖에 못 넣겠구나"라는 고민을 하지 않아도 된다.
+그냥 .Add() 함수를 외치면 알아서 공간을 더 늘려서 넣어준다.
+다만 Array는 할당한 크기를 넘어가면 IndexOutOfRangeException예외를 throw한다
+
+
+
+느낀 점
+
+Array와 List<>중 하나를 고를 때, 그걸 왜 써야 하는지를 생각해보면 도움이 될 것 같다.
+
+
+
+플러스
+
+std::array C++와 다르게 C# System.Array은 사이즈를 늘릴 수 있는 방법을 하나 알고 있는데
+Array.Resize(ref 어레이이름, 사이즈크기)를 호출하면 된다.
+
+아래는 이를 활용한 것.
+    public int AddElementInArray<T>(ref T[] array, T element)
+    {
+        // array에 null이 있는곳을 찾습니다.
+        // null이 있다면 그곳에 element을 집어넣습니다.
+        // null이 없다면 크기를 늘린 뒤 그곳에 element를 집어넣습니다.
+        // 넣는 것에 성공했다면 해당 인덱스를 리턴합니다.
+
+        if (array == null)
+        {
+            array = new T[] { element };
+            return 0;
+        }
+        for (int index = 0; index < array.Length; index++)
+        {
+            if (array[index] == null)
+            {
+                array[index] = element;
+                return index;
+            }
+        }
+        Array.Resize(ref array, array.Length + 1);
+        array[array.Length - 1] = element;
+        return array.Length - 1;
+    }
