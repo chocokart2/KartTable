@@ -1,0 +1,209 @@
+한글을 포함하는 char은 2 바이트를 사용한다.
+
+MemoryOutOfException
+
+using System;
+using System.IO;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace ConsoleApp1
+{
+    internal class Program
+    {
+                
+
+        static void Main(string[] args)
+        {
+            #region 함수 설명
+            //
+            // "이 문자열을 읽을 수 있으면 파일 입출력이 잘 된 것입니다." 라는 문장을 저장하고 불러들여와보자.
+            // 파일을 생성한다.
+            // 
+
+
+            #endregion
+
+            string fileName = "kart.dat";
+
+            string someString = "이 문자열을 읽을 수 있으면 파일 입출력이 잘 된 것입니다.";
+            char[] chars = someString.ToCharArray();
+            Console.WriteLine("원본 데이터 : {0}", someString);
+            //Console.WriteLine("원본 데이터 : {0}", chars);
+
+            Stream outStream = new FileStream(fileName, FileMode.Create);
+
+
+            List<byte> buffer = new List<byte>();
+
+            foreach (char c in chars)
+            {
+                foreach (byte b in BitConverter.GetBytes(c))
+                    buffer.Add(b);
+            }
+
+            Console.WriteLine("{0}", "Byte array : ");
+            foreach(byte b in buffer)
+            {
+                Console.Write("{0:X2} ", b);
+            }
+            Console.WriteLine();
+
+            // buffer -> bytes
+            byte[] bytes = new byte[buffer.Count];
+            for(int index = 0; index < buffer.Count; index++)
+            {
+                bytes[index] = buffer[index];
+            }
+
+            outStream.Write(bytes, 0, bytes.Length);
+            outStream.Close();
+
+            Stream inStream = new FileStream(fileName, FileMode.Open);
+            byte[] rbytes = new byte[inStream.Length];
+
+            int i = 0;
+            while (inStream.Position < inStream.Length)
+            {
+                rbytes[i++] = (byte)inStream.ReadByte();
+            }
+            inStream.Close();
+
+            //string readString = BitConverter.ToString(rbytes, 0);//읽는 바이트, 시작 인덱스
+            List<char> readChar = new List<char>();
+
+            for (int index = 0; index < rbytes.Length; index = index + 2)
+            {
+                readChar.Add(BitConverter.ToChar(
+                    new byte[] {
+                        rbytes[index], rbytes[index + 1]
+                    }, 0));
+
+                //Console.WriteLine("DEBUG_Program.Main : 현재 readchar의 크기 : {0}", readChar.Count); // 무한 루프를 돌고 있음.
+            }
+
+            Console.WriteLine("읽는 데이터 : ");
+            foreach(char c in readChar)
+            {
+                Console.Write(c);
+            }
+
+            //bytes.
+            
+
+            //byte[] wBytes = BitConverter.GetBytes()
+
+        }
+    }
+}
+
+============ 문제가 되었던 코드 ===========
+
+원인은 오타
+
+의도한 것은 index = index + 2인데
+index =+ 2로 입력하여
+index를 양수의 2로 유지시키게 되었다.
+올바른 표기
+index += 2
+
+
+using System;
+using System.IO;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace ConsoleApp1
+{
+    internal class Program
+    {
+                
+
+        static void Main(string[] args)
+        {
+            #region 함수 설명
+            //
+            // "이 문자열을 읽을 수 있으면 파일 입출력이 잘 된 것입니다." 라는 문장을 저장하고 불러들여와보자.
+            // 파일을 생성한다.
+            // 
+
+
+            #endregion
+
+            string fileName = "kart.dat";
+
+            string someString = "이 문자열을 읽을 수 있으면 파일 입출력이 잘 된 것입니다.";
+            char[] chars = someString.ToCharArray();
+            Console.WriteLine("원본 데이터 : {0}", someString);
+            //Console.WriteLine("원본 데이터 : {0}", chars);
+
+            Stream outStream = new FileStream(fileName, FileMode.Create);
+
+
+            List<byte> buffer = new List<byte>();
+
+            foreach (char c in chars)
+            {
+                foreach (byte b in BitConverter.GetBytes(c))
+                    buffer.Add(b);
+            }
+
+            Console.WriteLine("{0}", "Byte array : ");
+            foreach(byte b in buffer)
+            {
+                Console.Write("{0:X2} ", b);
+            }
+            Console.WriteLine();
+
+            // buffer -> bytes
+            byte[] bytes = new byte[buffer.Count];
+            for(int index = 0; index < buffer.Count; index++)
+            {
+                bytes[index] = buffer[index];
+            }
+
+            outStream.Write(bytes, 0, bytes.Length);
+            outStream.Close();
+
+            Stream inStream = new FileStream(fileName, FileMode.Open);
+            byte[] rbytes = new byte[inStream.Length];
+
+            int i = 0;
+            while (inStream.Position < inStream.Length)
+            {
+                rbytes[i++] = (byte)inStream.ReadByte();
+            }
+            inStream.Close();
+
+            //string readString = BitConverter.ToString(rbytes, 0);//읽는 바이트, 시작 인덱스
+            List<char> readChar = new List<char>();
+
+            for (int index = 0; (index * 2) < rbytes.Length; index =+ 2)
+            {
+                readChar.Add(BitConverter.ToChar(
+                    new byte[] {
+                        rbytes[index], rbytes[index + 1]
+                    }, 0));
+
+                Console.WriteLine("DEBUG_Program.Main : 현재 readchar의 크기 : {0}", readChar.Count); // 무한 루프를 돌게 된다
+            }
+
+            Console.WriteLine("읽는 데이터 : ");
+            foreach(char c in readChar)
+            {
+                Console.Write(c);
+            }
+
+            //bytes.
+            
+
+            //byte[] wBytes = BitConverter.GetBytes()
+
+        }
+    }
+}
+
