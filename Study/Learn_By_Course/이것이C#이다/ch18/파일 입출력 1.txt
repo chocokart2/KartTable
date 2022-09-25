@@ -1,0 +1,19 @@
+
+
+FileStream 생성자에 번째 파일명의 txt로 하면 텍스트 파일이 만들어진다.
+
+            StreamWriter sw =
+                new StreamWriter(new FileStream("a.txt", FileMode.Create));
+
+
+
+
+EndOfStream 스트림의 끝에 도달했는지를 알려주는 프로퍼티
+            StreamReader sr =
+                new StreamReader(
+                    new FileStream("a.txt", FileMode.Open));
+
+            while(sr.EndOfStream == false) // 파일의 끝에 도달하지 않을때
+            {
+                Console.WriteLine(sr.ReadLine());
+            }

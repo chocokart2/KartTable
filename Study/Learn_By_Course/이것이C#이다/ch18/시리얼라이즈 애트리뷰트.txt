@@ -1,0 +1,116 @@
+[Serializable] 애트리뷰트
+클래스를 직렬화 할 수 있게 만들어주는 애트리뷰트
+만약 멤버들 중에서 직렬화를 원하지 않는 경우가 있거나,
+[Serializable] 애트리뷰트가 없는 형식을 가지고 있는 멤버가 있으면
+그 멤버들에 한해서 접근 한정자 앞에 [NonSerialized]을 붙이면 된다.
+
+유니티에서 Json으로 직렬화하는것과 다르게
+객체의 프라이빗, 프로텍티드 필드(멤버 변수)들에게도 저장할 수 있음
+
+===== 참고 코드 1 =====
+    [Serializable]
+    class NameCard
+    {
+        // 필드
+        public string Name;
+        public string Phone;
+        //[NonSerialized]public string Phone;
+        public int Age;
+        protected byte junkNumberProtected;
+        private byte junkNumberPrivate;
+
+        // 함수
+        public void SetJunkNumbers(byte inputProtected, byte inputPrivate) // 이딴 변수에게는 4바이트도 아깝네
+        {
+            this.junkNumberProtected = inputProtected;
+            this.junkNumberPrivate = inputPrivate;
+        }
+        public byte[] GetJunkNumbers()
+        {
+            return new byte[]
+            {
+                this.junkNumberProtected,
+                this.junkNumberPrivate
+            };
+        }
+    }
+===== /참고 코드 1 =====
+
+그 이후엔 늘 그랬듯이 쓰는 스트림과 BinaryFormatter 인스턴스를 만들어
+그 인스턴스에 Serealize 함수와 Deserialize함수를 호출하면 된다
+
+===== 참고 코드 2 =====
+using System;
+using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace ConsoleApp1
+{
+    [Serializable]
+    class NameCard
+    {
+        // 필드
+        public string Name;
+        public string Phone;
+        //[NonSerialized]public string Phone;
+        public int Age;
+        protected byte junkNumberProtected;
+        private byte junkNumberPrivate;
+
+        // 함수
+        public void SetJunkNumbers(byte inputProtected, byte inputPrivate) // 이딴 변수에게는 4바이트도 아깝네
+        {
+            this.junkNumberProtected = inputProtected;
+            this.junkNumberPrivate = inputPrivate;
+        }
+        public byte[] GetJunkNumbers()
+        {
+            return new byte[]
+            {
+                this.junkNumberProtected,
+                this.junkNumberPrivate
+            };
+        }
+    }
+
+    internal class Program
+    {
+        static void Main(string[] args)
+        {
+            // 쓰는 스트림 준비
+            Stream ws = new FileStream("a.dat", FileMode.Create);
+            BinaryFormatter serializer = new BinaryFormatter();
+
+            // 객체 준비
+            NameCard nc = new NameCard();
+            nc.Name = "박상현";
+            nc.Phone = "010-123-4567";
+            nc.Age = 33;
+            nc.SetJunkNumbers(12, 34);
+
+            // 객체 직렬화
+            serializer.Serialize(ws, nc);
+            ws.Close();
+
+            // 읽는 스트림 준비
+            Stream rs = new FileStream("a.dat", FileMode.Open);
+            BinaryFormatter deserializer = new BinaryFormatter();
+
+            // 수신용 객체 생성 및 파일 역직렬화
+            NameCard nc2;
+            nc2 = (NameCard)deserializer.Deserialize(rs);
+            rs.Close();
+
+            // 객체 불러온거 확인하기
+            Console.WriteLine($"Name: {nc2.Name}");
+            Console.WriteLine($"Phone: {nc2.Phone}");
+            Console.WriteLine($"Age: {nc2.Age}");
+            Console.WriteLine($"Junk Numbers:{nc2.GetJunkNumbers()[0]}, {nc2.GetJunkNumbers()[1]}");
+        }
+    }
+}
+===== /참고 코드 2 =====
