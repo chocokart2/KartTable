@@ -1,0 +1,4 @@
+딕셔너리에서 정의역이 아닌 키 값이 들어오면 어떤 예외를 던질까
+
+System.Collections.Generic.KeyNotFoundException: 지정한 키가 사전에 없습니다.
+   위치: System.Collections.Generic.Dictionary`2.get_Item(TKey key)
